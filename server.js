@@ -6,11 +6,18 @@ const app = express();
 var bodyParser = require('body-parser')
 
 var jsonParser = bodyParser.json();
+
+app.use(cors());
+
+
+app.use(function(req, res, next) {
+   res.header("Access-Control-Allow-Origin", "*");
+   res.header('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST');
+   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+   next();
+});
 app.post('/send_email', jsonParser, (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
- res.set('Access-Control-Allow-Methods', 'POST');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    res.set('Access-Control-Max-Age', '3600');
+
    
   main({
     'smtp': req.body.smtp,
