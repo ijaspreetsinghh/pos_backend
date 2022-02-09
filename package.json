@@ -4,7 +4,7 @@
   "description": "jaspreet email server for web flutter petpos",
   "main": "server.js",
   "scripts": {
-    "start": "node .",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jaspreet Singh",

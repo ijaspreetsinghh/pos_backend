@@ -1,6 +1,6 @@
 const express = require('express');
 const res = require('express/lib/response');
-
+const cors=require('cors');
 const nodemailer = require("nodemailer"); 
 const app = express();
 var bodyParser = require('body-parser')
@@ -9,15 +9,11 @@ var jsonParser = bodyParser.json();
 
 app.use(cors());
 
-
-app.use(function(req, res, next) {
-   res.header("Access-Control-Allow-Origin", "*");
-   res.header('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST');
-   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-   next();
-});
-app.post('/send_email', jsonParser, (req, res) => {
-
+app.post('/send_email', jsonParser, (req, response) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    response.set('Access-Control-Allow-Methods', 'POST');
+    response.set('Access-Control-Allow-Headers', 'Content-Type');
+    response.set('Access-Control-Max-Age', '3600');
    
   main({
     'smtp': req.body.smtp,
@@ -29,7 +25,7 @@ app.post('/send_email', jsonParser, (req, res) => {
     'receiver': req.body.receiver,
     'subject': req.body.subject,
     'message': req.body.message, 'is_ssl': req.body.is_ssl
-  }).then((data) => res.send(data));
+  }).then((data) => response.send(data));
 });
 
 app.listen(process.env.process || 8080, function () {
