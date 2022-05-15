@@ -4,39 +4,55 @@ const cors=require('cors');
 const nodemailer = require("nodemailer"); 
 const app = express();
 var bodyParser = require('body-parser')
+require('dotenv').config();
+const API_KEY = process.env.API_KEY
 
 var jsonParser = bodyParser.json();
 
 app.use(cors());
 
 app.post('/send_email', jsonParser, (req, response) => {
-    res.set('Access-Control-Allow-Origin', '*');
+
+  if(req.body.api_key !== API_KEY){
+    return response.status(400).json({
+      status:400,
+      message:"Secret key is unauthorized"
+    })
+  }
+    response.set('Access-Control-Allow-Origin', "*");
     response.set('Access-Control-Allow-Methods', 'POST');
     response.set('Access-Control-Allow-Headers', 'Content-Type');
     response.set('Access-Control-Max-Age', '3600');
    
   main({
     'smtp': req.body.smtp,
-    'from_email': req.body.from_email,
+    'from_email':process.env.EMAIL,
     'from_name': req.body.from_name,
-    'port': req.body.port,
+    'port': process.env.PORT,
     'user_name': req.body.user_name,
-    'password': req.body.password,
+    'password': process.env.PASSWORD,
     'receiver': req.body.receiver,
     'subject': req.body.subject,
-    'message': req.body.message, 'is_ssl': req.body.is_ssl
-  }).then((data) => response.send(data));
+    'message': req.body.message, 
+    'is_ssl': process.env.IS_SSL,
+    "file":req.body.file,
+    "filename":req.body.filename
+  })
+  .then(data=>{
+    return response.status(200).json({
+      status:200,
+      message:"email sent successfully"
+    })
+  })
+  .catch(err=>{
+    return response.status(400).json({
+      status:400,
+      err:err
+    })
+  })
 });
 
-app.listen(process.env.process || 8080, function () {
-  console.log('Now Listening');
-})
-
-
-
-
-
-async function main({smtp,from_email,from_name,port,user_name,password,receiver,subject,message,is_ssl}) {
+async function main({smtp,from_email,from_name,port,user_name,password,receiver,subject,message,is_ssl,filename,file}) {
 
   let transporter = nodemailer.createTransport({
     host:smtp,
@@ -52,15 +68,17 @@ async function main({smtp,from_email,from_name,port,user_name,password,receiver,
     from: `${from_name} ${from_email}`, 
     to: receiver, 
     subject: subject, 
-    text: message, priority: 'high'
-
+    text: message, priority: 'high',
+    attachments: [{
+      filename: filename,
+      content: new Buffer.from(file,'utf-8')
+    }],
   });
-    console.log("Message sent: %s", info.messageId);
-
-
-
-  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    //console.log("Message sent: %s", info.messageId);
+ // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   return info.messageId;
-
-
 }
+
+app.listen(process.env.process || 8080, function () {
+  console.log('server listening on port 8080');
+})
